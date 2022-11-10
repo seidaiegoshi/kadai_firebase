@@ -19,12 +19,12 @@ import {
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-	apiKey: "AIzaSyARR6GKu_JymMIcqEZQVjnj7U6FAPNtvTw",
-	authDomain: "kadai-firebase-3b535.firebaseapp.com",
-	projectId: "kadai-firebase-3b535",
-	storageBucket: "kadai-firebase-3b535.appspot.com",
-	messagingSenderId: "273862643331",
-	appId: "1:273862643331:web:1a89e11a1a5679ef0b15b6",
+	apiKey: "AIzaSyBaKWvCbFpizYxsQDFf2XPwd6DlF7a9Ycg",
+	authDomain: "kadai-firebase2.firebaseapp.com",
+	projectId: "kadai-firebase2",
+	storageBucket: "kadai-firebase2.appspot.com",
+	messagingSenderId: "339246993251",
+	appId: "1:339246993251:web:b7c87d59527656174f4d56",
 };
 
 // Initialize Firebase

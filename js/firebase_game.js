@@ -1,15 +1,15 @@
 // firebaseと、ゲームに関わる操作はここで行う。
 // ゲームの流れ
 // ◆席につく
-//  来た順にタイムスタンプをつけて席につかせる。最大6人
-// ◆席についた人がみんな準備完了で質問投稿開始
-//  人数分or最大6人分の準備完了フラグがそろったら質問投稿できるようにする。
-// ◆質問を投稿完了したら、質問を表示
-//  質問の文字列を決定して、みんなの質問が空じゃなかったら質問をランダムにに表示する。
-// ◆質問に回答完了したら回答を表示
-//  答えの文字列がみんなからじゃなかったら、回答を表示
+//  来た順にタイムスタンプをつけて席につかせる。
+// ◆席についた人がみんな準備完了で回答を開始
+//  3人から6人の固定人数とした。
+// タイムスタンプ先頭の人がホストとして、ホストが乱数を使って質問をピックアップする。プレイヤー人数と質問番号をquestionNoに登録する。
+// questionNoコレクションが更新されたら、プレイヤー人数から質問コレクションを選択、番号から、何番目かを選択して、質問を表示する。
+// ◆質問に回答完了したらしつもんの答えを表示
+//  答えの文字列が空じゃなかったら、回答を表示
 // ◆全員席から退出。
-//  質問と答えを消してタイムスタンプを更新する。
+//  質問と答えを消してタイムスタンプと準備完了フラグをリセットする。
 
 // import { createRandomNumber, myStatus } from "./script.js";
 // Import the functions you need from the SDKs you need
@@ -20,6 +20,8 @@ import {
 	getFirestore,
 	collection,
 	addDoc,
+	getDocs,
+	getDoc,
 	serverTimestamp,
 	deleteDoc,
 	doc,
@@ -31,12 +33,12 @@ import {
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-	apiKey: "AIzaSyARR6GKu_JymMIcqEZQVjnj7U6FAPNtvTw",
-	authDomain: "kadai-firebase-3b535.firebaseapp.com",
-	projectId: "kadai-firebase-3b535",
-	storageBucket: "kadai-firebase-3b535.appspot.com",
-	messagingSenderId: "273862643331",
-	appId: "1:273862643331:web:1a89e11a1a5679ef0b15b6",
+	apiKey: "AIzaSyBaKWvCbFpizYxsQDFf2XPwd6DlF7a9Ycg",
+	authDomain: "kadai-firebase2.firebaseapp.com",
+	projectId: "kadai-firebase2",
+	storageBucket: "kadai-firebase2.appspot.com",
+	messagingSenderId: "339246993251",
+	appId: "1:339246993251:web:b7c87d59527656174f4d56",
 };
 
 // Initialize Firebase
@@ -46,6 +48,11 @@ const db = getFirestore(app);
 let usersStatus = [];
 let myStatus = {};
 let hartBeat;
+let imHost = false;
+let questionNumber = -1;
+let setQuestionNumberFlag = false;
+let docsSnap;
+const qdocuments = [];
 
 //自分が生きていることをサーバーに送信し続ける。
 setInterval(async () => {
@@ -78,11 +85,14 @@ setInterval(async () => {
 		myStatus = postData;
 		myStatus.id = docRef.id;
 	}
-}, 3000);
+}, 5000);
 
 //!データ監視ゾーン*************************************************************************
 const q = query(collection(db, "game"), orderBy("time", "asc"));
-onSnapshot(q, (querySnapshot) => {
+const q3 = query(collection(db, "question3"), orderBy("time", "asc"));
+const q4 = query(collection(db, "question4"), orderBy("time", "asc"));
+const q5 = query(collection(db, "question5"), orderBy("time", "asc"));
+onSnapshot(q, async (querySnapshot) => {
 	//一旦userStatusにオブジェクト配列として格納
 	const documents = [];
 	querySnapshot.docs.forEach((doc, i) => {
@@ -114,16 +124,15 @@ onSnapshot(q, (querySnapshot) => {
 	});
 
 	//オブジェクト配列を画面に表示 みんなの回答を画面に表示する。
-	//TODO 全員の回答が揃ったらにする。(回答したら、Readyフラグを下げて、Readyフラグがみんな下がったら答えを表示する。)
 	const htmlElements = [];
 	documents.forEach((document, index) => {
 		if (document.data.seatNumber != null) {
 			htmlElements.push(`
       <li id="${document.id}" class="ring-1">
-        <div id="${document.data.seatNumber}" class="flex justify-between">
-          <span class="whitespace-normal">seat:${document.data.seatNumber}</span>
-          <span class="whitespace-normal">Name:${document.data.name}</span>
-          <span class="whitespace-normal">Answer:${document.data.answer}</span>
+        <div id="${document.data.seatNumber}" class="flex justify-end">
+          <span class="mr-5">Name:${document.data.name}</span>
+          <span class="mr-5">Ready:${document.data.ready}</span>
+          <span class="ml-5">Answer:${document.data.answer}</span>
         </div>
       </li>
     `);
@@ -131,40 +140,88 @@ onSnapshot(q, (querySnapshot) => {
 	});
 	$("#gameWindow").html(htmlElements);
 
-	//全員が準備完了だったら質問を投稿開始！
+	//全員が準備完了だったら質問を選択して回答開始！
 	let allReady = true;
-	documents.forEach((el) => {
+	let playerCount = 0;
+	await documents.forEach((el, i) => {
 		if (!el.data.ready) {
 			allReady = false;
 		}
-	});
-	if (allReady) {
-		$("#allReady").text("質問を投稿してください！");
-	} else {
-		$("#question").text("");
-	}
-
-	//全員質問を投稿したら、質問を表示して回答開始！
-	let allSendQuestion = true;
-	documents.forEach((el) => {
-		if (el.data.question == "") {
-			allSendQuestion = false;
+		if (i == 0 && el.id == myStatus.id) {
+			// 自分がタイムスタンプ一番早かったら、自分がホストになる。
+			imHost = true;
 		}
+		playerCount++;
 	});
-	if (allSendQuestion) {
-		$("#question").text(documents[0].data.question);
-		$("#announceAnswer").text("回答してください！");
+	// 質問を設定する↓
+
+	if (allReady && 3 <= playerCount && playerCount <= 5) {
+		// 人数は3人以上5人以下でプレイ可能
+		const docRef = doc(db, "questionNo", "question-info");
+		// ここは1つのドキュメントを参照しているので「getDoc」
+		const docSnap = await getDoc(docRef);
+		if (!docsSnap) {
+			if (playerCount == 3) {
+				docsSnap = await getDocs(q3);
+			} else if (playerCount == 4) {
+				docsSnap = await getDocs(q4);
+			} else if (playerCount == 5) {
+				docsSnap = await getDocs(q5);
+			}
+			docsSnap.forEach((el, i) => {
+				const qdocumnt = {
+					id: el.id,
+					data: el.data(),
+				};
+				qdocuments.push(qdocumnt);
+			});
+			// console.log(qdocuments);
+		}
+
+		if (imHost && !setQuestionNumberFlag) {
+			setQuestionNumberFlag = true;
+			// 質問を設定するのはホストとして選ばれた人
+			// データ更新を行う処理。awaitで実行完了をまつ。
+			const num = createRandomNumber(0, qdocuments.length - 1);
+			console.log(num);
+			await updateDoc(docRef, {
+				playerNumber: playerCount,
+				questionNumber: num,
+			});
+		}
+
+		// 全員質問を取得する
+		if (docSnap.exists()) {
+			questionNumber = docSnap.data().questionNumber;
+
+			// console.log("qnum" + questionNumber);
+		}
+		if (playerCount === 3) {
+			// ここはコレクションを参照しているので、「getDocs」
+			qdocuments.forEach(async (el, i) => {
+				// console.log(el.data);
+				console.log("qnum" + questionNumber);
+				if (i == questionNumber) {
+					await $("#question").text(el.data.question);
+					await $("#announceAnswer").text("回答してください！");
+				}
+			});
+		}
 	}
 
 	//全員質問を投稿したら、質問を表示して回答開始！
 	let allSendAnswer = true;
-	documents.forEach((el) => {
-		if (el.data.question == "") {
+	documents.forEach(async (el) => {
+		if (el.data.answer == "") {
 			allSendAnswer = false;
 		}
 	});
 	if (allSendAnswer) {
-		$("#collectAnswer").text("正解は・・・「" + documents[0].data.answer + "」でした！");
+		qdocuments.forEach(async (el, i) => {
+			if (i == questionNumber) {
+				await $("#collectAnswer").text("正解は・・・「" + el.data.answer + "」でした！");
+			}
+		});
 	}
 });
 
@@ -208,9 +265,7 @@ $("#sendQuestion").on("click", async () => {
 
 //答えを送信する。
 $("#sendAnswer").on("click", async () => {
-	console.log("here1");
 	if ($("#answer").val() && myStatus.id) {
-		console.log("here");
 		//ローカルのデータを更新
 		myStatus.answer = $("#answer").val();
 		// どこに書き込むか

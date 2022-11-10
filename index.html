@@ -9,8 +9,8 @@
 
 	<body class="font-sans m-5">
 		<div class="container mx-auto">
-			<h1 class="text-3xl">hex</h1>
-			<a href="./html/add_question.html">質問を追加する</a>
+			<h1 class="text-3xl">HEXAGON</h1>
+			<a href="./html/add_question.html" class="ring-1 bg-lime-500 text-white">質問を追加する</a>
 		</div>
 
 		<!-- 参加、準備完了 -->
@@ -32,17 +32,6 @@
 
 		<!-- アナウンスエリア -->
 		<div id="allReady" class="text-slate-800 text-lg m-3"></div>
-
-		<!-- 問題を設定する -->
-		<div class="m-3">
-			<input id="myQuestion" class="ring-2 m-1" type="text" placeholder="myQuestion" />
-			<button
-				class="rounded-full text-white px-4 py-2 bg-sky-500 hover:bg-sky-700"
-				type="button"
-				id="sendQuestion">
-				質問を投稿する
-			</button>
-		</div>
 
 		<!-- 質問エリア -->
 		<div id="question" class="text-slate-800 text-lg m-3"></div>
@@ -94,6 +83,5 @@
 		<script src="./js/time.js"></script>
 		<script type="module" src="./js/firebase_chat.js"></script>
 		<script type="module" src="./js/firebase_game.js"></script>
-		<script type="module" src="./js/script.js"></script>
 	</body>
 </html>
