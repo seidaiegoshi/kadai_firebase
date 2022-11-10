@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>add question</title>
+	</head>
+	<body>
+		<div id="question3">
+			<p>3文字の答えとなる質問と答えを登録する</p>
+			<div class="flex items-center justify-start">
+				<label for="q3Question">質問</label><input class="ring-2" type="text" id="q3Question" />
+				<label for="q3Answer">答え</label>
+				<input class="ring-2" type="text" id="q3Answer" />
+				<button class="ring-1 bg-slate-500 text-white px-2 mx-2" id="btnQ3Add">登録</button>
+				<textarea class="ring-1" name="" id="record3" cols="20" rows="5"></textarea>
+			</div>
+		</div>
+		<div id="question4">
+			<p>4文字の答えとなる質問と答えを登録する</p>
+			<div class="flex items-center justify-start">
+				<label for="q4Question">質問</label><input class="ring-2" type="text" id="q4Question" />
+				<label for="q4Answer">答え</label>
+				<input class="ring-2" type="text" id="q4Answer" />
+				<button class="ring-1 bg-slate-500 text-white px-2 mx-2" id="btnQ4Add">登録</button>
+				<textarea class="ring-1" name="" id="record4" cols="20" rows="5"></textarea>
+			</div>
+		</div>
+		<div id="question5">
+			<p>5文字の答えとなる質問と答えを登録する</p>
+			<div class="flex items-center justify-start">
+				<label for="q5Question">質問</label><input class="ring-2" type="text" id="q5Question" />
+				<label for="q5Answer">答え</label>
+				<input class="ring-2" type="text" id="q5Answer" />
+				<button class="ring-1 bg-slate-500 text-white px-2 mx-2" id="btnQ5Add">登録</button>
+				<textarea class="ring-1" name="" id="record5" cols="20" rows="5"></textarea>
+			</div>
+		</div>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script type="module">
+			// Import the functions you need from the SDKs you need
+			import { initializeApp } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js";
+			// TODO: Add SDKs for Firebase products that you want to use
+			// https://firebase.google.com/docs/web/setup#available-libraries
+
+			import {
+				getFirestore,
+				collection,
+				addDoc,
+				doc,
+				deleteDoc,
+				serverTimestamp,
+				query,
+				orderBy,
+				onSnapshot,
+			} from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";
+
+			// Your web app's Firebase configuration
+			const firebaseConfig = {
+				apiKey: "AIzaSyARR6GKu_JymMIcqEZQVjnj7U6FAPNtvTw",
+				authDomain: "kadai-firebase-3b535.firebaseapp.com",
+				projectId: "kadai-firebase-3b535",
+				storageBucket: "kadai-firebase-3b535.appspot.com",
+				messagingSenderId: "273862643331",
+				appId: "1:273862643331:web:1a89e11a1a5679ef0b15b6",
+			};
+
+			// Initialize Firebase
+			const app = initializeApp(firebaseConfig);
+			const db = getFirestore(app);
+
+			//----------------------------------
+			//Q3
+			//----------------------------------
+			//チャット呼び出し処理
+			const q3 = query(collection(db, "question3"), orderBy("time", "asc"));
+			onSnapshot(q3, (querySnapshot) => {
+				//一旦documentsにオブジェクト配列として格納
+				const documents = [];
+				querySnapshot.docs.forEach((doc, i) => {
+					const document = {
+						id: doc.id,
+						data: doc.data(),
+					};
+					documents.push(document);
+				});
+
+				//オブジェクト配列を画面に表示
+				const text = [];
+				documents.forEach((document) => {
+					text.push(`Q:${document.data.question}\nA:${document.data.answer}\n`);
+				});
+				$("#record3").val(text);
+			});
+
+			//書き込み処理
+			$("#btnQ3Add").on("click", () => {
+				if ($("#q3Question").val() && $("#q3Answer").val()) {
+					const postData = {
+						question: $("#q3Question").val(),
+						answer: $("#q3Answer").val(),
+						time: serverTimestamp(),
+					};
+					addDoc(collection(db, "question3"), postData);
+					$("#q3Question").val("");
+					$("#q3Answer").val("");
+				}
+			});
+			//----------------------------------
+			//Q4
+			//----------------------------------
+			//チャット呼び出し処理
+			const q4 = query(collection(db, "question4"), orderBy("time", "asc"));
+			onSnapshot(q4, (querySnapshot) => {
+				//一旦documentsにオブジェクト配列として格納
+				const documents = [];
+				querySnapshot.docs.forEach((doc, i) => {
+					const document = {
+						id: doc.id,
+						data: doc.data(),
+					};
+					documents.push(document);
+				});
+
+				//オブジェクト配列を画面に表示
+				const text = [];
+				documents.forEach((document) => {
+					text.push(`Q:${document.data.question}\nA:${document.data.answer}\n`);
+				});
+				$("#record4").val(text);
+			});
+
+			//書き込み処理
+			$("#btnQ4Add").on("click", () => {
+				if ($("#q4Question").val() && $("#q4Answer").val()) {
+					const postData = {
+						question: $("#q4Question").val(),
+						answer: $("#q4Answer").val(),
+						time: serverTimestamp(),
+					};
+					addDoc(collection(db, "question4"), postData);
+					$("#q4Question").val("");
+					$("#q4Answer").val("");
+				}
+			});
+			// //----------------------------------
+			// //Q5
+			// //----------------------------------
+			//チャット呼び出し処理
+			const q5 = query(collection(db, "question5"), orderBy("time", "asc"));
+			onSnapshot(q5, (querySnapshot) => {
+				//一旦documentsにオブジェクト配列として格納
+				const documents = [];
+				querySnapshot.docs.forEach((doc, i) => {
+					const document = {
+						id: doc.id,
+						data: doc.data(),
+					};
+					documents.push(document);
+				});
+
+				//オブジェクト配列を画面に表示
+				const text = [];
+				documents.forEach((document) => {
+					text.push(`Q:${document.data.question}\nA:${document.data.answer}\n`);
+				});
+				$("#record5").val(text);
+			});
+
+			//書き込み処理
+			$("#btnQ5Add").on("click", () => {
+				if ($("#q5Question").val() && $("#q5Answer").val()) {
+					const postData = {
+						question: $("#q5Question").val(),
+						answer: $("#q5Answer").val(),
+						time: serverTimestamp(),
+					};
+					addDoc(collection(db, "question5"), postData);
+					$("#q5Question").val("");
+					$("#q5Answer").val("");
+				}
+			});
+		</script>
+	</body>
+</html>
