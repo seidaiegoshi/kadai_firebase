@@ -9,3 +9,8 @@ function convertTimestampToDatetime(timestamp) {
 	const s = _d.getSeconds().toString().padStart(2, "0");
 	return `${Y}/${m}/${d} ${H}:${i}:${s}`;
 }
+
+// 指定した範囲で乱数をつくる関数
+const createRandomNumber = (max, min) => {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+};

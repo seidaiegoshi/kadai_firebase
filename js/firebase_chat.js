@@ -1,4 +1,4 @@
-//firebaseに関わる操作はここで行う。
+//firebaseのチャットに関わる操作はここで行う。
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js";
@@ -12,13 +12,10 @@ import {
 	doc,
 	deleteDoc,
 	serverTimestamp,
-	Timestamp,
 	query,
 	orderBy,
 	onSnapshot,
 } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";
-
-console.log(Timestamp.now().toDate());
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -78,13 +75,13 @@ onSnapshot(q, (querySnapshot) => {
 
 //チャット書き込み処理
 $("#chatSend").on("click", () => {
-	if ($("#text").val()) {
+	if ($("#chatText").val()) {
 		const postData = {
 			name: $("#name").val(),
-			text: $("#text").val(),
+			text: $("#chatText").val(),
 			time: serverTimestamp(),
 		};
 		addDoc(collection(db, "chat"), postData);
-		$("#text").val("");
+		$("#chatText").val("");
 	}
 });
