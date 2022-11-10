@@ -9,17 +9,14 @@ import {
 	getFirestore,
 	collection,
 	addDoc,
+	serverTimestamp,
+	deleteDoc,
 	doc,
 	updateDoc,
 	query,
 	onSnapshot,
+	orderBy,
 } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";
-import {
-	getAuth,
-	signInAnonymously,
-	setPersistence,
-	inMemoryPersistence,
-} from "https://www.gstatic.com/firebasejs/9.13.0/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -34,34 +31,87 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth();
 
 let usersStatus = [];
-let myStatus = {
-	id: "",
-	name: "",
-	answer: "",
-	question: "",
-	ready: false,
-	seatNumber: null,
-};
+let myStatus = {};
+let hartBeat;
 
-//game呼び出し処理
-const q = query(collection(db, "game"));
+//自分が生きていることをサーバーに送信し続ける。
+setInterval(async () => {
+	if (myStatus.id) {
+		//すでにIDを持っていたら、現在時刻を更新する。
+		// ローカルの現在時刻をセット
+		myStatus.iAmAlive = serverTimestamp();
+
+		const MyDataAddress = doc(db, "game", myStatus.id);
+		// サーバーの自分が持つ現在時刻を更新
+		await updateDoc(MyDataAddress, {
+			iAmAlive: myStatus.iAmAlive,
+		});
+	} else {
+		//IDを持ってなかったら新規に登録する。
+		let postData = {
+			name: "",
+			answer: "",
+			seatNumber: usersStatus.length,
+			ready: false,
+			question: "",
+			iAmAlive: serverTimestamp(),
+			time: serverTimestamp(),
+		};
+
+		// firestoreにデータ登録
+		const docRef = await addDoc(collection(db, "game"), postData);
+
+		//ローカルに自分の情報を持っておく。
+		myStatus = postData;
+		myStatus.id = docRef.id;
+	}
+}, 3000);
+
+//監視
+const q = query(collection(db, "game"), orderBy("time", "asc"));
 onSnapshot(q, (querySnapshot) => {
 	//一旦userStatusにオブジェクト配列として格納
-	usersStatus = [];
+	const documents = [];
 	querySnapshot.docs.forEach((doc, i) => {
 		const document = {
 			id: doc.id,
 			data: doc.data(),
 		};
-		usersStatus.push(document);
+		documents.push(document);
 	});
 
-	//オブジェクト配列を画面に表示
+	//自分のタイムスタンプと他の人のタイムスタンプを比較していない人を退場させる。
+	//超エラーでるけど動いている。
+	documents.forEach((el, index) => {
+		if (el.id == myStatus.id) {
+			//これがないとめっちゃエラー出る
+			if (el.data.iAmAlive) {
+				hartBeat = el.data.iAmAlive.seconds;
+			}
+		}
+	});
+	documents.forEach(async (el, index) => {
+		if (el.data.iAmAlive) {
+			//これがないとめっちゃエラー出る
+			if (Math.abs(hartBeat - el.data.iAmAlive.seconds) > 10) {
+				//10秒以上生きていないドキュメントを削除する。
+				await deleteDoc(doc(db, "game", el.id));
+			}
+		}
+		// if (myStatus.id) {
+		// 	const MyDataAddress = doc(db, "game", myStatus.id);
+		// 	updateDoc(MyDataAddress, {
+		// 		seatNumber: index,
+		// 	});
+		// }
+	});
+
+	//オブジェクト配列を画面に表示 みんなの回答を画面に表示する。
+	//TODO 全員の回答が揃ったらにする。(回答したら、Readyフラグを下げて、Readyフラグがみんな下がったら答えを表示する。)
 	const htmlElements = [];
-	usersStatus.forEach((document, index) => {
+	documents.forEach((document, index) => {
 		if (document.data.seatNumber != null) {
 			htmlElements.push(`
       <li id="${document.id}" class="ring-1">
@@ -77,37 +127,27 @@ onSnapshot(q, (querySnapshot) => {
 	$("#gameWindow").html(htmlElements);
 
 	//全員が準備完了だったら質問を表示する。
+	// TODO: ブラウザでランダムつくっても問題が統一しないので、誰かがデータベースに登録するようにする。
 	let readyAll = true;
 	let playerCount = 0;
 	let questions = [];
-	usersStatus.forEach((document) => {
+	documents.forEach((document) => {
+		if (document.data.ready) {
+			playerCount++;
+		}
 		if (document.data.seatNumber != null && !document.data.ready) {
 			readyAll = false;
-			playerCount++;
 			questions.push(document.data.question);
 		}
 	});
+	//みんな準備完了なら質問をランダムに表示する。
 	if (readyAll) {
-		$("#question").text(questions[createRandomNumber(0, questions.length - 1)]);
+		$("#question").text(questions[createRandomNumber(0, playerCount)]);
 	}
 });
 
-console.log(auth.currentUser);
-
-//プレイヤーをドキュメントに追加する。
+//プレイヤーの名前をドキュメントに追加する。
 $("#setUserName").on("click", async () => {
-	//匿名でサインイン
-	console.log(auth.currentUser);
-	await signInAnonymously(auth)
-		.then(() => {
-			console.log(auth.currentUser.uid); //自分のUIDを表示
-		})
-		.catch((error) => {
-			const errorCode = error.code;
-			const errorMessage = error.message;
-			console.log(errorCode + errorMessage);
-		});
-
 	if ($("#userName").val()) {
 		$("#userName").prop("disabled", true);
 		let postData = {};
@@ -138,6 +178,7 @@ $("#setUserName").on("click", async () => {
 			ready: false,
 			question: "",
 			answer: "",
+			iAmAlive: serverTimestamp(),
 		};
 	}
 	//TODO一回ボタン押したらおせなくする処理
