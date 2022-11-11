@@ -50,6 +50,7 @@
 				collection,
 				addDoc,
 				doc,
+				where,
 				deleteDoc,
 				serverTimestamp,
 				query,
@@ -75,7 +76,7 @@
 			//Q3
 			//----------------------------------
 			//チャット呼び出し処理
-			const q3 = query(collection(db, "question3"), orderBy("time", "asc"));
+			const q3 = query(collection(db, "questions"), where("length", "==", 3));
 			onSnapshot(q3, (querySnapshot) => {
 				//一旦documentsにオブジェクト配列として格納
 				const documents = [];
@@ -102,8 +103,9 @@
 						question: $("#q3Question").val(),
 						answer: $("#q3Answer").val(),
 						time: serverTimestamp(),
+						length: 3,
 					};
-					addDoc(collection(db, "question3"), postData);
+					addDoc(collection(db, "questions"), postData);
 					$("#q3Question").val("");
 					$("#q3Answer").val("");
 				}
@@ -112,7 +114,7 @@
 			//Q4
 			//----------------------------------
 			//チャット呼び出し処理
-			const q4 = query(collection(db, "question4"), orderBy("time", "asc"));
+			const q4 = query(collection(db, "questions"), where("length", "==", 4));
 			onSnapshot(q4, (querySnapshot) => {
 				//一旦documentsにオブジェクト配列として格納
 				const documents = [];
@@ -139,8 +141,9 @@
 						question: $("#q4Question").val(),
 						answer: $("#q4Answer").val(),
 						time: serverTimestamp(),
+						length: 4,
 					};
-					addDoc(collection(db, "question4"), postData);
+					addDoc(collection(db, "questions"), postData);
 					$("#q4Question").val("");
 					$("#q4Answer").val("");
 				}
@@ -149,7 +152,7 @@
 			// //Q5
 			// //----------------------------------
 			//チャット呼び出し処理
-			const q5 = query(collection(db, "question5"), orderBy("time", "asc"));
+			const q5 = query(collection(db, "questions"), where("length", "==", 5));
 			onSnapshot(q5, (querySnapshot) => {
 				//一旦documentsにオブジェクト配列として格納
 				const documents = [];
@@ -176,8 +179,9 @@
 						question: $("#q5Question").val(),
 						answer: $("#q5Answer").val(),
 						time: serverTimestamp(),
+						length: 5,
 					};
-					addDoc(collection(db, "question5"), postData);
+					addDoc(collection(db, "questions"), postData);
 					$("#q5Question").val("");
 					$("#q5Answer").val("");
 				}

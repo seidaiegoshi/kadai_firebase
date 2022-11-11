@@ -25,6 +25,7 @@ import {
 	serverTimestamp,
 	deleteDoc,
 	doc,
+	where,
 	updateDoc,
 	query,
 	onSnapshot,
@@ -52,7 +53,6 @@ let imHost = false;
 let questionNumber = -1;
 let setQuestionNumberFlag = false;
 let docsSnap;
-const qdocuments = [];
 
 //自分が生きていることをサーバーに送信し続ける。
 setInterval(async () => {
@@ -146,6 +146,7 @@ onSnapshot(q, async (querySnapshot) => {
 	await documents.forEach((el, i) => {
 		if (!el.data.ready) {
 			allReady = false;
+			setQuestionNumberFlag = false;
 		}
 		if (i == 0 && el.id == myStatus.id) {
 			// 自分がタイムスタンプ一番早かったら、自分がホストになる。
@@ -154,38 +155,36 @@ onSnapshot(q, async (querySnapshot) => {
 		playerCount++;
 	});
 	// 質問を設定する↓
+	console.log(setQuestionNumberFlag);
 
 	if (allReady && 3 <= playerCount && playerCount <= 5) {
+		console.log("playerCount" + playerCount);
 		// 人数は3人以上5人以下でプレイ可能
 		const docRef = doc(db, "questionNo", "question-info");
+		const qs = query(collection(db, "questions"), where("length", "==", playerCount));
 		// ここは1つのドキュメントを参照しているので「getDoc」
 		const docSnap = await getDoc(docRef);
 		if (!docsSnap) {
-			if (playerCount == 3) {
-				docsSnap = await getDocs(q3);
-			} else if (playerCount == 4) {
-				docsSnap = await getDocs(q4);
-			} else if (playerCount == 5) {
-				docsSnap = await getDocs(q5);
-			}
-			docsSnap.forEach((el, i) => {
-				const qdocumnt = {
-					id: el.id,
-					data: el.data(),
-				};
-				qdocuments.push(qdocumnt);
-			});
-			// console.log(qdocuments);
+			docsSnap = await getDocs(qs);
 		}
+		const qdocuments = [];
+		docsSnap.forEach((el, i) => {
+			const qdocumnt = {
+				id: el.id,
+				data: el.data(),
+			};
+			qdocuments.push(qdocumnt);
+		});
+		// console.log(qdocuments);
 
 		if (imHost && !setQuestionNumberFlag) {
 			setQuestionNumberFlag = true;
 			// 質問を設定するのはホストとして選ばれた人
 			// データ更新を行う処理。awaitで実行完了をまつ。
+			console.log("qdoclen" + qdocuments.length);
 			const num = createRandomNumber(0, qdocuments.length - 1);
-			console.log(num);
+			console.log("set" + num);
 			await updateDoc(docRef, {
-				playerNumber: playerCount,
 				questionNumber: num,
 			});
 		}
@@ -196,17 +195,16 @@ onSnapshot(q, async (querySnapshot) => {
 
 			// console.log("qnum" + questionNumber);
 		}
-		if (playerCount === 3) {
-			// ここはコレクションを参照しているので、「getDocs」
-			qdocuments.forEach(async (el, i) => {
-				// console.log(el.data);
-				console.log("qnum" + questionNumber);
-				if (i == questionNumber) {
-					await $("#question").text(el.data.question);
-					await $("#announceAnswer").text("回答してください！");
-				}
-			});
-		}
+		// ここはコレクションを参照しているので、「getDocs」
+		qdocuments.forEach(async (el, i) => {
+			// console.log(el.data);
+			console.log("qnum" + questionNumber);
+			if (i == questionNumber) {
+				await $("#question").text(el.data.question);
+				console.log("questontext" + el.data.question);
+				await $("#announceAnswer").text("回答してください！");
+			}
+		});
 	}
 
 	//全員質問を投稿したら、質問を表示して回答開始！
