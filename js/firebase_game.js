@@ -233,6 +233,8 @@ $("#setUserName").on("click", async () => {
 		await updateDoc(MyDataAddress, {
 			name: myStatus.name,
 		});
+		$("#btnReady").css("display", "block");
+		$("#chatSend").css("display", "block");
 	}
 });
 

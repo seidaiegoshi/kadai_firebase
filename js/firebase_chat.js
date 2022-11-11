@@ -9,8 +9,6 @@ import {
 	getFirestore,
 	collection,
 	addDoc,
-	doc,
-	deleteDoc,
 	serverTimestamp,
 	query,
 	orderBy,
@@ -54,10 +52,10 @@ onSnapshot(q, (querySnapshot) => {
 	const htmlElements = [];
 	documents.forEach((document) => {
 		htmlElements.push(`
-          <li id="${document.id}">
+          <li id="${document.id}" class="ring-1 ring-gray-200">
             <p>
             <span>${document.data.name}</span>
-            <span class="text-gray-500"> ${convertTimestampToDatetime(document.data.time.seconds)}</span> 
+            <span class="text-gray-500"> ${convertTimestampToDatetime(document.data.time?.seconds)}</span> 
             </p>
             <p>${document.data.text}</p>
           </li>
@@ -77,7 +75,7 @@ onSnapshot(q, (querySnapshot) => {
 $("#chatSend").on("click", () => {
 	if ($("#chatText").val()) {
 		const postData = {
-			name: $("#name").val(),
+			name: $("#userName").val(),
 			text: $("#chatText").val(),
 			time: serverTimestamp(),
 		};
