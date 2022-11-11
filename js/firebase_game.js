@@ -157,6 +157,7 @@ onSnapshot(q, async (querySnapshot) => {
 	// 質問を設定する↓
 	console.log(setQuestionNumberFlag);
 
+	const qdocuments = [];
 	if (allReady && 3 <= playerCount && playerCount <= 5) {
 		console.log("playerCount" + playerCount);
 		// 人数は3人以上5人以下でプレイ可能
@@ -167,7 +168,6 @@ onSnapshot(q, async (querySnapshot) => {
 		if (!docsSnap) {
 			docsSnap = await getDocs(qs);
 		}
-		const qdocuments = [];
 		docsSnap.forEach((el, i) => {
 			const qdocumnt = {
 				id: el.id,
