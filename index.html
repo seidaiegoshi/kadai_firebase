@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>fireBase</title>
+	</head>
+
+	<body class="font-sans m-5">
+		<div class="container mx-auto">
+			<h1 class="text-3xl">HEXAGON</h1>
+			<a href="./html/add_question.html" class="ring-1 bg-lime-500 text-white">質問を追加する</a>
+		</div>
+
+		<!-- 参加、準備完了 -->
+		<div class="profile m-3">
+			<input id="userName" class="ring-2 m-1" type="text" placeholder="userName" />
+			<button
+				class="rounded-full text-white px-4 py-2 bg-sky-500 hover:bg-sky-700"
+				type="button"
+				id="setUserName">
+				参加する
+			</button>
+			<button
+				class="rounded-full text-white px-4 py-2 bg-sky-500 hover:bg-sky-700"
+				type="button"
+				id="btnReady">
+				準備完了
+			</button>
+		</div>
+
+		<!-- アナウンスエリア -->
+		<div id="allReady" class="text-slate-800 text-lg m-3"></div>
+
+		<!-- 質問エリア -->
+		<div id="question" class="text-slate-800 text-lg m-3"></div>
+		<div id="announceAnswer" class="text-slate-800 text-lg m-3"></div>
+
+		<!-- 回答する -->
+		<div class="m-3">
+			<input id="answer" class="ring-2 m-1" type="text" placeholder="answer" />
+			<button
+				class="rounded-full text-white px-4 py-2 bg-sky-500 hover:bg-sky-700"
+				type="button"
+				id="sendAnswer">
+				回答する
+			</button>
+		</div>
+
+		<div id="collectAnswer" class="text-slate-800 text-lg m-3"></div>
+
+		<div class="m-2">
+			<!-- 答え合わせエリア -->
+			<div class="border-2 m-3">
+				<ul id="gameWindow"></ul>
+			</div>
+
+			<!-- チャット画面 -->
+			<div class="ring-2 m-3">
+				<div tabindex="0" id="chatHistory" class="container mx-auto scr max-h-80 overflow-auto">
+					<ul id="output" class="container ring-1"></ul>
+				</div>
+				<form>
+					<fieldset>
+						<legend>チャット</legend>
+						<div>
+							<input class="ring-2" type="text" id="chatText" placeholder="chatText" />
+							<button
+								class="rounded-full text-white px-4 py-1 bg-sky-500 hover:bg-sky-700"
+								type="button"
+								id="chatSend">
+								SEND
+							</button>
+						</div>
+					</fieldset>
+				</form>
+			</div>
+		</div>
+
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="./js/time.js"></script>
+		<script type="module" src="./js/firebase_chat.js"></script>
+		<script type="module" src="./js/firebase_game.js"></script>
+	</body>
+</html>
