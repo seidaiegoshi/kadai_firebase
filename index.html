@@ -23,7 +23,7 @@
 				参加する
 			</button>
 			<button
-				class="rounded-full text-white px-4 py-2 bg-sky-500 hover:bg-sky-700"
+				class="hidden rounded-full text-white px-4 py-2 bg-sky-500 hover:bg-sky-700"
 				type="button"
 				id="btnReady">
 				準備完了
@@ -48,26 +48,26 @@
 			</button>
 		</div>
 
-		<div id="collectAnswer" class="text-slate-800 text-lg m-3"></div>
+		<div id="collectAnswer" class="text-slate-800 text-3xl m-3"></div>
 
 		<div class="m-2">
 			<!-- 答え合わせエリア -->
 			<div class="border-2 m-3">
+				<h2 class="text-3xl">ユーザー一覧</h2>
 				<ul id="gameWindow"></ul>
 			</div>
 
 			<!-- チャット画面 -->
 			<div class="ring-2 m-3">
-				<div tabindex="0" id="chatHistory" class="container mx-auto scr max-h-80 overflow-auto">
+				<div tabindex="0" id="chatHistory" class="mx-auto max-h-80 overflow-auto">
 					<ul id="output" class="container ring-1"></ul>
 				</div>
 				<form>
 					<fieldset>
-						<legend>チャット</legend>
-						<div>
-							<input class="ring-2" type="text" id="chatText" placeholder="chatText" />
+						<div class="flex justify-between">
+							<input class="flex-auto ring-2" type="text" id="chatText" placeholder="chatText" />
 							<button
-								class="rounded-full text-white px-4 py-1 bg-sky-500 hover:bg-sky-700"
+								class="hidden rounded-none text-white px-4 py-1 bg-sky-500 hover:bg-sky-700"
 								type="button"
 								id="chatSend">
 								SEND
